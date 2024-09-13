@@ -55,11 +55,13 @@ def scrape_data():
             pokemon_name = 'N/A'
         
         try:
-            usage_percent = pokemon.find('span', class_='margin-right-20').text.strip()
-        except AttributeError:
-            usage_percent = 'N/A'
+            usage_percent_text = pokemon.find('span', class_='margin-right-20').text.strip()
+            usage_percent = float(usage_percent_text.replace('%', ''))
+        except (AttributeError, ValueError):
+            usage_percent = 0.0
         
-        data.append([pokemon_name, usage_percent])
+        if usage_percent >= 1.00:
+            data.append([pokemon_name, f"{usage_percent}%"])
 
     print('Scraping complete.')
     return data
