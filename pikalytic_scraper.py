@@ -24,12 +24,12 @@ def scrape_data():
     for pokemon in pokemon_list:
         
         try:
-            pokemon_name = pokemon.find('span', class_='pokemon-name').text.strip
+            pokemon_name = pokemon.find('span', class_='pokemon-name').text.strip()
         except AttributeError:
             pokemon_name = 'N/A'
         
         try:
-            usage_percent = pokemon.find('span', class_='margin-right-20').text.strip
+            usage_percent = pokemon.find('span', class_='margin-right-20').text.strip()
         except AttributeError:
             usage_percent = 'N/A'
         
@@ -66,8 +66,7 @@ if __name__ == "__main__":
 
     print('Starting scraping process...')
 
-    data = []
-    scrape_data().extend(data)
+    data = scrape_data()
     write_to_excel(data, output)
 
     print('Process completed successfully.')
