@@ -1,18 +1,44 @@
 import openpyxl
 import requests
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-from urllib.parse import quote_plus
 import os
-import openpyxl
+import time
 
 def scrape_data():
     print("Scraping Pikalytics data")
+    options = webdriver.FirefoxOptions()
+    options.headless = True
+    driver = webdriver.Firefox(options=options)
     url = 'https://www.pikalytics.com/pokedex/gen9ou/'
+    driver.get(url)
+
+    # Allow Java to load
+    time.sleep(3)
+
+    # Locate scrollable element
+    scroll_element = driver.find_element(By.CLASS_NAME, 'pokedex-wrapper-min')
+    last_height = driver.execute_script("return arguments[0].scrollHeight", scroll_element)
+    while True:
+        driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", scroll_element)
+        time.sleep(1)
+        new_height = driver.execute_script("return arguments[0].scrollHeight", scroll_element)
+
+        if new_height == last_height:
+            break
+
+        last_height = new_height
 
     # Make request and parse HTML
     response = requests.get(url)
     print("Response status code: ", response.status_code)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    page_source = driver.page_source
+    soup = BeautifulSoup(page_source, 'html.parser')
+
+    # Close browser
+    driver.quit()
 
     # Find pokemon on page
     pokemon_list = soup.find_all('a', class_='pokedex_entry')
