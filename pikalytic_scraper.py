@@ -12,6 +12,10 @@ def scrape_data():
     # Make request and parse HTML
     response = requests.get(url)
     print("Response status code: ", response.status_code)
+
+    with open('pikalytics_page.txt', 'w', encoding='utf-8') as f:
+        f.write(response.text)
+
     soup = BeautifulSoup(response.content, 'html.parser')
 
     # Find pokemon on page
