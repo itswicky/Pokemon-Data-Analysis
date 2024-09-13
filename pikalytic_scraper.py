@@ -1,4 +1,6 @@
 import openpyxl
+from openpyxl.styles import NamedStyle
+from openpyxl.utils import get_column_letter
 import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -23,7 +25,7 @@ def scrape_data():
     last_height = driver.execute_script("return arguments[0].scrollHeight", scroll_element)
     while True:
         driver.execute_script("arguments[0].scrollTo(0, arguments[0].scrollHeight);", scroll_element)
-        time.sleep(1)
+        time.sleep(0.10)
         new_height = driver.execute_script("return arguments[0].scrollHeight", scroll_element)
 
         if new_height == last_height:
@@ -33,7 +35,7 @@ def scrape_data():
 
     # Make request and parse HTML
     response = requests.get(url)
-    print("Response status code: ", response.status_code)
+    print("Response status code:", response.status_code)
     page_source = driver.page_source
     soup = BeautifulSoup(page_source, 'html.parser')
 
@@ -45,6 +47,7 @@ def scrape_data():
     print("Found", len(pokemon_list), "pokemon.")
 
     data = []
+    count = 0
 
     #Iterate over each item
     for pokemon in pokemon_list:
@@ -61,8 +64,11 @@ def scrape_data():
             usage_percent = 0.0
         
         if usage_percent >= 1.00:
-            data.append([pokemon_name, f"{usage_percent}%"])
+            count += 1
+            usage_percent = usage_percent / 100
+            data.append([pokemon_name, usage_percent])
 
+    print(count, 'entries found which matched criteria.')
     print('Scraping complete.')
     return data
 
@@ -80,10 +86,24 @@ def write_to_excel(data, output):
     # Write headers
     headers = ['Name', 'Usage']
     ws.append(headers)
+    percent_style = NamedStyle(name="percent", number_format='0.00%')
 
     # Write data
     for row in data:
         ws.append(row)
+
+    for row in ws.iter_rows(min_row=2, min_col=2, max_col=2):
+        for cell in row:
+            cell.style = percent_style
+
+
+    # Adjust column width based on content
+    for col in ws.columns:
+        max_length = 0
+        for cell in col:
+            max_length = max(max_length, len(str(cell.value)))
+        column_letter = get_column_letter(col[0].column)
+        ws.column_dimensions[column_letter].width = max_length + 5.5
 
     # Save workbook
     wb.save(output)
