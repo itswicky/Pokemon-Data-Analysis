@@ -14,7 +14,7 @@ def scrape_data():
     options = webdriver.FirefoxOptions()
     options.headless = True
     driver = webdriver.Firefox(options=options)
-    url = 'https://www.pikalytics.com/pokedex/gen9ou/'
+    url = 'https://www.pikalytics.com/pokedex/gen8ou/'
     driver.get(url)
 
     # Allow Java to load
